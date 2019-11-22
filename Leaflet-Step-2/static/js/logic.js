@@ -1,8 +1,7 @@
 // Data source variables
 var earthquakeInfo = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson';
-var tectonicInfo = 'static/js/PB2002_boundaries.json'
-var orogensInfo = 'static/js/PB2002_orogens.json'
-var stepsInfo = 'static/js/PB2002_steps.json'
+var tectonicInfo = 'https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json';
+var orogensInfo = 'https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_orogens.json';
 
 // Perform a GET request to the query URL
 d3.json(earthquakeInfo, function (data) {
@@ -36,7 +35,7 @@ function createMap(earthquakes) {
     var satellite = L.tileLayer(`https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v10/tiles/256/{z}/{x}/{y}?access_token=${API_KEY}`, {
         attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
         maxZoom: 18,
-        id: "mapbox.sattel",
+        id: "mapbox.satellite",
     });
 
     var greyscale = L.tileLayer(`https://api.mapbox.com/styles/v1/mapbox/light-v9/tiles/256/{z}/{x}/{y}?access_token=${API_KEY}`, {
@@ -60,24 +59,20 @@ function createMap(earthquakes) {
 
     var tPlates = new L.LayerGroup();
     var oInfo = new L.LayerGroup();
-    var sInfo = new L.LayerGroup();
 
     // Create overlay object to hold our overlay layer
     var overlayMaps = {
         'Earthquakes': earthquakes,
         'Tectonic Plates': tPlates,
-        'Orogens': oInfo,
-        'Steps': sInfo
+        'Orogens': oInfo
     };
 
     // Create our map, giving it the streetmap and earthquakes layers to display on load
     var myMap = L.map("map", {
         worldCopyJump: true,
-        center: [
-            37.09, -95.71
-        ],
+        center: [37.09, -95.71],
         zoom: 5,
-        layers: [satellite, earthquakes, tPlates, oInfo, sInfo]
+        layers: [satellite, earthquakes, tPlates, oInfo]
     });
 
     // Tectonic plate data
@@ -96,14 +91,6 @@ function createMap(earthquakes) {
                 weight: 2
             })
             .addTo(oInfo);
-    });
-
-    d3.json(stepsInfo, function (sData) {
-        L.geoJSON(sData, {
-                color: "blue",
-                weight: 2
-            })
-            .addTo(sInfo);
     });
 
     // Create a layer control
@@ -137,8 +124,6 @@ function createMap(earthquakes) {
     legend.addTo(myMap);
 }
 
-// -------
-
 // Color function - from https://leafletjs.com/examples/choropleth/
 function getColor(d) {
     return d > 5 ? '#800026' :
@@ -149,6 +134,6 @@ function getColor(d) {
         '#DAF7A6';
 }
 
-function setRadius(magRad) {
-    return magRad * 5
+function setRadius(d) {
+    return d * 5
 }
